@@ -7,7 +7,7 @@
 [![GitHub issues by-label](https://img.shields.io/github/issues/minerllabs/minerl/bug.svg?color=red)](https://github.com/minerllabs/minerl/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3Abug)
 [![Discord](https://img.shields.io/discord/565639094860775436.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/BT9uegr)
 
-Python package providing easy to use Gym environments and data access for training agents in Minecraft.
+Python package providing easy to use Gymnasium environments and data access for training agents in Minecraft.
 
 Curious to see what people have done with MineRL? See [this page where we collect projects using MineRL](https://minerl.readthedocs.io/en/latest/notes/useful-links.html). **Got a project using MineRL (academic or fun hobby project)?** Edit [this file](https://github.com/minerllabs/minerl/blob/dev/docs/source/notes/useful-links.rst), add links to your projects and create a PR!
 
@@ -36,10 +36,10 @@ pip install git+https://github.com/minerllabs/minerl
 
 ## Basic Usage
 
-Can be used much like any Gym environment:
+Can be used much like any Gymnasium environment:
 
 ```python
-import gym
+import gymnasium as gym
 import minerl
 
 # Uncomment to see more logs of the MineRL launch
@@ -47,14 +47,15 @@ import minerl
 # coloredlogs.install(logging.DEBUG)
 
 env = gym.make("MineRLBasaltBuildVillageHouse-v0")
-obs = env.reset()
+obs, info = env.reset()
 
 done = False
 while not done:
     ac = env.action_space.noop()
     # Spin around to see what is around us
     ac["camera"] = [0, 3]
-    obs, reward, done, info = env.step(ac)
+    obs, reward, terminated, truncated, info = env.step(ac)
+    done = terminated or truncated
     env.render()
 env.close()
 ```

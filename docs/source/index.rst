@@ -38,13 +38,13 @@ Welcome to documentation for the MineRL_
 project and its related repositories and components!
 
 .. _MineRL: http://minerl.io
-.. _OpenAI Gym: https://gym.openai.com
+.. _Gymnasium: https://gymnasium.farama.org/
 .. _set of environments: http://minerl.io/docs/environments
 
 What is MineRL
 ---------------
 
-MineRL is a rich Python 3 library which provides a `OpenAI Gym`_ interface for interacting 
+MineRL is a rich Python 3 library which provides a `Gymnasium`_ interface for interacting
 with the video game Minecraft, accompanied with datasets of human gameplay.
 
 Started as a research project at Carnegie Mellon University, MineRL aims to assist

@@ -7,7 +7,7 @@ from typing import Dict, Iterator, Any, List, Tuple
 import typing
 from xml.etree.ElementTree import Element
 
-import gym
+import gymnasium as gym
 import jinja2
 
 

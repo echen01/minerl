@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 
 from minerl.env import _fake, _singleagent
 from minerl.herobraine.env_specs.human_survival_specs import HumanSurvival
@@ -10,8 +10,28 @@ from typing import List
 
 TIMEOUT = 18000
 DIAMOND_ITEMS = [
-    [["acacia_log", "birch_log", "dark_oak_log", "jungle_log", "oak_log", "spruce_log"], 1],
-    [["acacia_planks", "birch_planks", "dark_oak_planks", "jungle_planks", "oak_planks", "spruce_planks"], 2],
+    [
+        [
+            "acacia_log",
+            "birch_log",
+            "dark_oak_log",
+            "jungle_log",
+            "oak_log",
+            "spruce_log",
+        ],
+        1,
+    ],
+    [
+        [
+            "acacia_planks",
+            "birch_planks",
+            "dark_oak_planks",
+            "jungle_planks",
+            "oak_planks",
+            "spruce_planks",
+        ],
+        2,
+    ],
     [["stick"], 4],
     [["crafting_table"], 4],
     [["wooden_pickaxe"], 8],
@@ -22,7 +42,7 @@ DIAMOND_ITEMS = [
     [["iron_ingot"], 128],
     [["iron_pickaxe"], 256],
     [["diamond"], 1024],
-    [["diamond_shovel"], 2048]
+    [["diamond_shovel"], 2048],
 ]
 
 
@@ -38,65 +58,72 @@ class ObtainDiamondShovelWrapper(gym.Wrapper):
     def step(self, action: dict):
         if self.episode_over:
             raise RuntimeError("Expected `reset` after episode terminated, not `step`.")
-        observation, reward, done, info = super().step(action)
+        observation, reward, terminated, truncated, info = super().step(action)
         for i, [item_list, rew] in enumerate(self.rewarded_items):
             if not self.seen[i]:
                 for item in item_list:
                     if observation["inventory"][item] > 0:
-                        if i == len(self.rewarded_items) - 1:  # achieved last item in rewarded item list
-                            done = True
+                        if (
+                            i == len(self.rewarded_items) - 1
+                        ):  # achieved last item in rewarded item list
+                            terminated = True
                         reward += rew
                         self.seen[i] = 1
                         break
         self.num_steps += 1
         if self.num_steps >= self.timeout:
-            done = True
-        self.episode_over = done
-        return observation, reward, done, info
+            truncated = True
+        self.episode_over = terminated or truncated
+        return observation, reward, terminated, truncated, info
 
-    def reset(self):
+    def reset(self, **kwargs):
         self.seen = [0] * len(self.rewarded_items)
         self.episode_over = False
-        obs = super().reset()
+        obs = super().reset(**kwargs)
         return obs
 
 
-def _obtain_diamond_shovel_gym_entrypoint(env_spec, fake=False):
+def _obtain_diamond_shovel_gym_entrypoint(env_spec, fake=False, **kwargs):
     """Used as entrypoint for `gym.make`."""
     if fake:
-        env = _fake._FakeSingleAgentEnv(env_spec=env_spec)
+        env = _fake._FakeSingleAgentEnv(env_spec=env_spec, **kwargs)
     else:
-        env = _singleagent._SingleAgentEnv(env_spec=env_spec)
+        env = _singleagent._SingleAgentEnv(env_spec=env_spec, **kwargs)
 
     env = ObtainDiamondShovelWrapper(env)
     return env
 
-OBTAIN_DIAMOND_SHOVEL_ENTRY_POINT = "minerl.herobraine.env_specs.obtain_specs:_obtain_diamond_shovel_gym_entrypoint"
+
+OBTAIN_DIAMOND_SHOVEL_ENTRY_POINT = (
+    "minerl.herobraine.env_specs.obtain_specs:_obtain_diamond_shovel_gym_entrypoint"
+)
+
 
 class ObtainDiamondShovelEnvSpec(HumanSurvival):
     r"""
-In this environment the agent is required to obtain a diamond shovel.
-The agent begins in a random starting location on a random survival map
-without any items, matching the normal starting conditions for human players in Minecraft.
+    In this environment the agent is required to obtain a diamond shovel.
+    The agent begins in a random starting location on a random survival map
+    without any items, matching the normal starting conditions for human players in Minecraft.
 
-During an episode the agent is rewarded according to the requisite item
-hierarchy needed to obtain a diamond shovel. The rewards for each item are
-given here::
+    During an episode the agent is rewarded according to the requisite item
+    hierarchy needed to obtain a diamond shovel. The rewards for each item are
+    given here::
 
-    <Item reward="1" type="log" />
-    <Item reward="2" type="planks" />
-    <Item reward="4" type="stick" />
-    <Item reward="4" type="crafting_table" />
-    <Item reward="8" type="wooden_pickaxe" />
-    <Item reward="16" type="cobblestone" />
-    <Item reward="32" type="furnace" />
-    <Item reward="32" type="stone_pickaxe" />
-    <Item reward="64" type="iron_ore" />
-    <Item reward="128" type="iron_ingot" />
-    <Item reward="256" type="iron_pickaxe" />
-    <Item reward="1024" type="diamond" />
-    <Item reward="2048" type="diamond_shovel" />
-"""
+        <Item reward="1" type="log" />
+        <Item reward="2" type="planks" />
+        <Item reward="4" type="stick" />
+        <Item reward="4" type="crafting_table" />
+        <Item reward="8" type="wooden_pickaxe" />
+        <Item reward="16" type="cobblestone" />
+        <Item reward="32" type="furnace" />
+        <Item reward="32" type="stone_pickaxe" />
+        <Item reward="64" type="iron_ore" />
+        <Item reward="128" type="iron_ingot" />
+        <Item reward="256" type="iron_pickaxe" />
+        <Item reward="1024" type="diamond" />
+        <Item reward="2048" type="diamond_shovel" />
+    """
+
     def __init__(self):
         super().__init__(
             name="MineRLObtainDiamondShovel-v0",
@@ -106,7 +133,7 @@ given here::
             resolution=[640, 360],
             gamma_range=[2, 2],
             guiscale_range=[1, 1],
-            cursor_size_range=[16.0, 16.0]
+            cursor_size_range=[16.0, 16.0],
         )
 
     def _entry_point(self, fake: bool) -> str:
@@ -115,10 +142,8 @@ given here::
     def create_observables(self) -> List[Handler]:
         return [
             handlers.POVObservation(self.resolution),
-            handlers.FlatInventoryObservation(ALL_ITEMS)
+            handlers.FlatInventoryObservation(ALL_ITEMS),
         ]
 
     def create_monitors(self) -> List[TranslationHandler]:
         return []
-
-

@@ -1,25 +1,35 @@
 from minerl.env.malmo import InstanceManager
 from minerl.herobraine.env_specs.treechop_specs import Treechop
-import gym
+import gymnasium as gym
 import minerl  # noqa
 import argparse
 import time
 
 
 class TreechopMultiAgentNoQuit(Treechop):
-    # This version of treechop doesn't terminate the episode 
+    # This version of treechop doesn't terminate the episode
     # if the other agent quits/dies (or gets the max reward)
     def create_server_quit_producers(self):
-        return [
-
-        ]
+        return []
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--single', action="store_true", help='use the single agent default xml')
-    parser.add_argument('--port', type=int, default=None, help='the port of existing client or None to launch')
-    parser.add_argument('--episodes', type=int, default=2, help='the number of resets to perform - default is 1')
+    parser.add_argument(
+        "--single", action="store_true", help="use the single agent default xml"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help="the port of existing client or None to launch",
+    )
+    parser.add_argument(
+        "--episodes",
+        type=int,
+        default=2,
+        help="the number of resets to perform - default is 1",
+    )
     args = parser.parse_args()
 
     # logs
@@ -68,7 +78,8 @@ if __name__ == '__main__':
 
             # print(str(steps) + " actions: " + str(actions))
 
-            obs, reward, done, info = env.step(actions)
+            obs, reward, terminated, truncated, info = env.step(actions)
+            done = terminated or truncated
 
             # log("reward: " + str(reward))
             # log("done: " + str(done))

@@ -23,7 +23,7 @@ def _test_batch_map(stackable_space, batch_dims=(32, 16), no_op=False):
 
     # Now map it through
     unmapped = stackable_space.unmap(stackable_space.flat_map(batch))
-    if unmapped.dtype.type is np.float:
+    if np.issubdtype(unmapped.dtype, np.floating):
         assert np.allclose(unmapped, batch)
     else:
         assert np.all(unmapped == batch)
@@ -38,7 +38,8 @@ def test_batch_flat_map():
         MultiDiscrete([3, 4]),
         MultiDiscrete([3]),
         Discrete(94),
-        Enum('asd', 'sd', 'asdads', 'qweqwe')]:
+        Enum("asd", "sd", "asdads", "qweqwe"),
+    ]:
         _test_batch_map(space)
         _test_batch_map(space, no_op=True)
 
@@ -46,7 +47,7 @@ def test_batch_flat_map():
 def test_unmap_flat_map():
     md = MultiDiscrete([3, 4])
     x = md.sample()
-    assert (np.array_equal(md.unmap(md.flat_map(x)), x))
+    assert np.array_equal(md.unmap(md.flat_map(x)), x)
 
     # Test that unmap composed with flat_map returns the original value
 
@@ -54,12 +55,12 @@ def test_unmap_flat_map():
 def test_box_flat_map():
     b = Box(shape=[3, 2], low=-2, high=2, dtype=np.float32)
     x = b.sample()
-    assert (np.allclose(b.unmap(b.flat_map(x)), x))
+    assert np.allclose(b.unmap(b.flat_map(x)), x)
 
 
 # A method which asserts equality between an ordered dict of numpy arrays and another
 # ordered dict - WTH
-def assert_equal_recursive(npa_dict, dict_to_test, atol=1.e-8, ignore=None):
+def assert_equal_recursive(npa_dict, dict_to_test, atol=1.0e-8, ignore=None):
     ignore = [] if ignore is None else ignore
     assert isinstance(npa_dict, collections.OrderedDict)
     assert isinstance(dict_to_test, collections.OrderedDict)
@@ -67,9 +68,9 @@ def assert_equal_recursive(npa_dict, dict_to_test, atol=1.e-8, ignore=None):
         if key in ignore:
             continue
         if isinstance(value, np.ndarray):
-            if key == 'camera':
+            if key == "camera":
                 assert np.allclose(value, dict_to_test[key], atol=1.5)
-            elif value.dtype.type is np.string_ or value.dtype.type is np.str_:
+            elif value.dtype.type is np.bytes_ or value.dtype.type is np.str_:
                 assert value == dict_to_test[key]
             else:
                 assert np.allclose(value, dict_to_test[key], atol=atol)
@@ -82,10 +83,7 @@ def assert_equal_recursive(npa_dict, dict_to_test, atol=1.e-8, ignore=None):
 
 # Test that unmap composed with flat_map returns the original value
 def test_unmap_flat_map_dict():
-    d = Dict({'a': Box(
-        shape=[3, 2], low=-2, high=2,
-        dtype=np.float32
-    )})
+    d = Dict({"a": Box(shape=[3, 2], low=-2, high=2, dtype=np.float32)})
     x = d.sample()
     assert_equal_recursive(d.unmap(d.flat_map(x)), x)
 
@@ -94,29 +92,28 @@ def test_unmap_flat_map_dict():
 def test_unmap_flat_map_discrete():
     d = Discrete(5)
     x = d.sample()
-    assert (np.array_equal(d.unmap(d.flat_map(x)), x))
+    assert np.array_equal(d.unmap(d.flat_map(x)), x)
 
     # Test that unmap composed with flat_map returns the original value
 
 
 def test_unmap_flat_map_enum():
-    d = Enum('type1', 'type2')
+    d = Enum("type1", "type2")
     x = d.sample()
-    assert (np.array_equal(d.unmap(d.flat_map(x)), x))
+    assert np.array_equal(d.unmap(d.flat_map(x)), x)
 
 
 def test_all():
-    d = Dict({
-        'one': MultiDiscrete([3, 4]),
-        'two': Box(low=0, high=1, shape=[6]),
-        'three': Discrete(5),
-        'four': Enum('type1', 'type2'),
-        'five': Enum('type1'),
-        'six': Dict({'a': Box(
-            shape=[3, 2], low=-1, high=2,
-            dtype=np.float32)
-        })
-    })
+    d = Dict(
+        {
+            "one": MultiDiscrete([3, 4]),
+            "two": Box(low=0, high=1, shape=[6]),
+            "three": Discrete(5),
+            "four": Enum("type1", "type2"),
+            "five": Enum("type1"),
+            "six": Dict({"a": Box(shape=[3, 2], low=-1, high=2, dtype=np.float32)}),
+        }
+    )
 
     x = d.sample()
     assert_equal_recursive(d.unmap(d.flat_map(x)), x)
@@ -130,7 +127,7 @@ def test_all_flat_map_numpy_only():
         Discrete(10),
         Discrete(100),
         Discrete(1000),
-        Enum('a', 'b', 'c')
+        Enum("a", "b", "c"),
     ]
     for space in spaces:
         x = space.sample()
@@ -141,16 +138,11 @@ def test_all_flat_map_numpy_only():
 # Tests unmap composed with flat_map on all of the MineRLSpaces
 # this test uses a very nested dict space to
 def test_all_flat_map_nested_dict():
-    all_spaces = Dict({
-        'a': Dict({
-            'b': Dict({
-                'c': Discrete(10)
-            }),
-            'd': Discrete(10)
-        }),
-        'e': Dict({
-            'f': Discrete(10)
-        })
-    })
+    all_spaces = Dict(
+        {
+            "a": Dict({"b": Dict({"c": Discrete(10)}), "d": Discrete(10)}),
+            "e": Dict({"f": Discrete(10)}),
+        }
+    )
     x = all_spaces.sample()
     assert_equal_recursive(all_spaces.unmap(all_spaces.flat_map(x)), x)

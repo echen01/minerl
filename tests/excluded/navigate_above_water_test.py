@@ -4,7 +4,7 @@ import select
 import time
 import logging
 
-import gym
+import gymnasium as gym
 import minerl
 import numpy as np
 

@@ -1,7 +1,7 @@
 from minerl.env.malmo import InstanceManager
 import minerl
 import time
-import gym
+import gymnasium as gym
 import numpy as np
 import logging
 import coloredlogs

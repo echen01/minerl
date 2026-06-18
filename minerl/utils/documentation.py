@@ -1,7 +1,7 @@
 import json
 from typing import Union
 
-import gym
+import gymnasium as gym
 
 from minerl.herobraine.env_spec import EnvSpec
 

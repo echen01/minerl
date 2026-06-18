@@ -1,6 +1,6 @@
 import minerl
 import IPython
-import gym
+import gymnasium as gym
 import coloredlogs
 import logging
 import time

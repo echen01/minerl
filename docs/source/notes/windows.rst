@@ -41,7 +41,7 @@ your code into the following structure.
 .. code-block:: python
 
     import minerl
-    import gym
+    import gymnasium as gym
 
     def main()
         # do your main minerl code

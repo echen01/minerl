@@ -9,7 +9,7 @@ To get started, let's first import the necessary packages
 
 .. code-block:: python
 
-    import gym
+    import gymnasium as gym
     import minerl
 
 
@@ -70,7 +70,7 @@ and get our first observation from the agent by resetting the environment.
     
     # Note that this command will launch the MineRL environment, which takes time.
     # Be patient!
-    obs = env.reset()
+    obs, info = env.reset()
 
 The :code:`obs` variable will be a dictionary containing the following
 observations returned by the environment. In the case of the
@@ -104,7 +104,7 @@ observations returned by the environment. In the case of the
 
 
 Now let's take actions through the environment until time runs out
-or the agent dies. To do this, we will use the normal OpenAI Gym :code:`env.step`
+or the agent dies. To do this, we will use the normal Gymnasium :code:`env.step`
 method.
 
 .. code-block:: python
@@ -117,7 +117,8 @@ method.
         # In BASALT environments, sending ESC action will end the episode
         # Lets not do that
         action["ESC"] = 0
-        obs, reward, done, _ = env.step(action)
+        obs, reward, terminated, truncated, _ = env.step(action)
+        done = terminated or truncated
         env.render()
 
 
@@ -125,4 +126,3 @@ method.
 
 With the :code:`env.render` call, you should see the agent move sporadically until :code:`done` flag is set to true,
 which will happen when agent runs out of time (3 minutes in the FindCave task).
-

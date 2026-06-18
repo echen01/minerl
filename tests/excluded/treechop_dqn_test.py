@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import itertools
 import minerl
 import numpy as np

@@ -8,36 +8,36 @@ from typing import Optional
 import time
 from collections import defaultdict
 
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import pyglet
 import pyglet.window.key as key
 
 # Mapping from MineRL action space names to pyglet keys
 MINERL_ACTION_TO_KEYBOARD = {
-    "ESC":       key.ESCAPE, # Used in BASALT to end the episode
-    "attack":    pyglet.window.mouse.LEFT,
-    "back":      key.S,
-    "drop":      key.Q,
-    "forward":   key.W,
-    "hotbar.1":  key._1,
-    "hotbar.2":  key._2,
-    "hotbar.3":  key._3,
-    "hotbar.4":  key._4,
-    "hotbar.5":  key._5,
-    "hotbar.6":  key._6,
-    "hotbar.7":  key._7,
-    "hotbar.8":  key._8,
-    "hotbar.9":  key._9,
+    "ESC": key.ESCAPE,  # Used in BASALT to end the episode
+    "attack": pyglet.window.mouse.LEFT,
+    "back": key.S,
+    "drop": key.Q,
+    "forward": key.W,
+    "hotbar.1": key._1,
+    "hotbar.2": key._2,
+    "hotbar.3": key._3,
+    "hotbar.4": key._4,
+    "hotbar.5": key._5,
+    "hotbar.6": key._6,
+    "hotbar.7": key._7,
+    "hotbar.8": key._8,
+    "hotbar.9": key._9,
     "inventory": key.E,
-    "jump":      key.SPACE,
-    "left":      key.A,
-    "pickItem":  pyglet.window.mouse.MIDDLE,
-    "right":     key.D,
-    "sneak":     key.LSHIFT,
-    "sprint":    key.LCTRL,
+    "jump": key.SPACE,
+    "left": key.A,
+    "pickItem": pyglet.window.mouse.MIDDLE,
+    "right": key.D,
+    "sneak": key.LSHIFT,
+    "sprint": key.LCTRL,
     "swapHands": key.F,
-    "use":       pyglet.window.mouse.RIGHT
+    "use": pyglet.window.mouse.RIGHT,
 }
 
 KEYBOARD_TO_MINERL_ACTION = {v: k for k, v in MINERL_ACTION_TO_KEYBOARD.items()}
@@ -50,6 +50,7 @@ MOUSE_MULTIPLIER = 0.1
 MINERL_FPS = 20
 MINERL_FRAME_TIME = 1 / MINERL_FPS
 
+
 class HumanPlayInterface(gym.Wrapper):
     def __init__(self, minerl_env):
         super().__init__(minerl_env)
@@ -57,10 +58,7 @@ class HumanPlayInterface(gym.Wrapper):
         self.env = minerl_env
         pov_shape = self.env.observation_space["pov"].shape
         self.window = pyglet.window.Window(
-            width=pov_shape[1],
-            height=pov_shape[0],
-            vsync=False,
-            resizable=False
+            width=pov_shape[1], height=pov_shape[0], vsync=False, resizable=False
         )
         self.start_time = time.time()
         self.end_time = time.time()
@@ -120,21 +118,33 @@ class HumanPlayInterface(gym.Wrapper):
         remaining_buttons.add("camera")
         for action_name, action_space in minerl_env.action_space.spaces.items():
             if action_name not in remaining_buttons:
-                raise RuntimeError(f"Invalid MineRL action space: action {action_name} is not supported.")
-            elif (not isinstance(action_space, spaces.Discrete) or action_space.n != 2) and action_name != "camera":
-                raise RuntimeError(f"Invalid MineRL action space: action {action_name} had space {action_space}. Only Discrete(2) is supported.")
+                raise RuntimeError(
+                    f"Invalid MineRL action space: action {action_name} is not supported."
+                )
+            elif (
+                not isinstance(action_space, spaces.Discrete) or action_space.n != 2
+            ) and action_name != "camera":
+                raise RuntimeError(
+                    f"Invalid MineRL action space: action {action_name} had space {action_space}. Only Discrete(2) is supported."
+                )
             remaining_buttons.remove(action_name)
         if len(remaining_buttons) > 0:
-            raise RuntimeError(f"Invalid MineRL action space: did not contain actions {remaining_buttons}")
+            raise RuntimeError(
+                f"Invalid MineRL action space: did not contain actions {remaining_buttons}"
+            )
 
         obs_space = minerl_env.observation_space
         if not isinstance(obs_space, spaces.Dict) or "pov" not in obs_space.spaces:
-            raise RuntimeError("Invalid MineRL observation space: observation space must contain POV observation.")
+            raise RuntimeError(
+                "Invalid MineRL observation space: observation space must contain POV observation."
+            )
 
     def _update_image(self, arr):
         self.window.switch_to()
         # Based on scaled_image_display.py
-        image = pyglet.image.ImageData(arr.shape[1], arr.shape[0], 'RGB', arr.tobytes(), pitch=arr.shape[1] * -3)
+        image = pyglet.image.ImageData(
+            arr.shape[1], arr.shape[0], "RGB", arr.tobytes(), pitch=arr.shape[1] * -3
+        )
         texture = image.get_texture()
         texture.blit(0, 0)
         self.window.flip()
@@ -143,7 +153,8 @@ class HumanPlayInterface(gym.Wrapper):
         """Read keyboard and mouse state for a new action"""
         # Keyboard actions
         action = {
-            name: int(self.pressed_keys[key] if key is not None else None) for name, key in MINERL_ACTION_TO_KEYBOARD.items()
+            name: int(self.pressed_keys[key] if key is not None else None)
+            for name, key in MINERL_ACTION_TO_KEYBOARD.items()
         }
 
         action["camera"] = self.last_mouse_delta
@@ -156,20 +167,22 @@ class HumanPlayInterface(gym.Wrapper):
             font_size=32,
             x=self.window.width // 2,
             y=self.window.height // 2,
-            anchor_x='center',
-            anchor_y='center'
+            anchor_x="center",
+            anchor_y="center",
         )
         label.draw()
         self.window.flip()
 
-    def reset(self):
+    def reset(self, **kwargs):
         self.window.clear()
         self._show_message("Resetting environment...")
-        obs = self.env.reset()
+        obs, info = self.env.reset(**kwargs)
         self._update_image(obs["pov"])
-        return obs
+        return obs, info
 
-    def step(self, action: Optional[dict] = None, override_if_human_input: bool = False):
+    def step(
+        self, action: Optional[dict] = None, override_if_human_input: bool = False
+    ):
         """
         Step environment for one frame.
 
@@ -190,16 +203,19 @@ class HumanPlayInterface(gym.Wrapper):
             self.window.dispatch_events()
             human_action = self._get_human_action()
             if override_if_human_input:
-                if any(v != 0 if name != "camera" else (v[0] != 0 or v[1] != 0) for name, v in human_action.items()):
+                if any(
+                    v != 0 if name != "camera" else (v[0] != 0 or v[1] != 0)
+                    for name, v in human_action.items()
+                ):
                     action = human_action
             else:
                 action = human_action
 
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, terminated, truncated, info = self.env.step(action)
         self._update_image(obs["pov"])
 
-        if done:
+        if terminated or truncated:
             self._show_message("Episode done.")
 
         info["taken_action"] = action
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info

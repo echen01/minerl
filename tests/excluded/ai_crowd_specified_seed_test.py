@@ -48,7 +48,7 @@ def main():
 
     # envs = []
 
-    import gym
+    import gymnasium as gym
     os.environ['MINERL_INSTANCE_MANAGER_REMOTE'] = '1'
     import minerl
 

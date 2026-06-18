@@ -5,7 +5,7 @@ Installation
 Welcome to MineRL! This guide will get you started.
 
 
-To start using the MineRL dataset and Gym environments comprising MineRL, you'll need to install the
+To start using the MineRL dataset and Gymnasium environments comprising MineRL, you'll need to install the
 main python package, :code:`minerl`.
 
 .. _OpenJDK 8: https://openjdk.java.net/install/

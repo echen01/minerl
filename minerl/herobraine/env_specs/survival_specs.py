@@ -4,7 +4,7 @@ from minerl.herobraine.env_specs.simple_embodiment import SimpleEmbodimentEnvSpe
 from minerl.herobraine.hero.handler import Handler
 from typing import List
 
-import gym
+import gymnasium as gym
 
 import minerl.herobraine
 import minerl.herobraine.hero.handlers as handlers

@@ -19,4 +19,6 @@ prune minerl/Malmo/Minecraft/.minecraft
 prune minerl/Malmo/Minecraft/.minecraftserver
 prune minerl/Malmo/Minecraft/run/saves
 global-exclude *.lock
+global-exclude *.py[cod]
 global-exclude *fuse_hidden*
+prune */__pycache__

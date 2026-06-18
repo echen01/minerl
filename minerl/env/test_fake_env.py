@@ -12,11 +12,10 @@ color = coloredlogs.install(level=logging.DEBUG)
 
 # Let's also test monitors
 
+
 class NavigateWithDistanceMonitor(Navigate):
     def create_monitors(self) -> List[TranslationHandler]:
-        return [
-            handlers.CompassObservation(angle=False, distance=True)
-        ]
+        return [handlers.CompassObservation(angle=False, distance=True)]
 
 
 def _test_fake_env(env_spec, should_render=False):
@@ -30,12 +29,12 @@ def _test_fake_env(env_spec, should_render=False):
 
     fake_env.seed(200)
     assert fake_env._seed == 200
-    fake_obs = fake_env.reset()
+    fake_obs, _ = fake_env.reset()
 
     assert fake_obs in env_spec.observation_space
 
     for _ in range(100):
-        fake_obs, _, _, fake_monitor = fake_env.step(fake_env.action_space.sample())
+        fake_obs, _, _, _, fake_monitor = fake_env.step(fake_env.action_space.sample())
         if should_render:
             fake_env.render()
             time.sleep(0.1)
@@ -54,7 +53,7 @@ def test_fake_navigate_with_distance_monitor():
     _ = fake_env.reset()
 
     for _ in range(100):
-        fake_obs, _, _, fake_monitor = fake_env.step(fake_env.action_space.sample())
+        fake_obs, _, _, _, fake_monitor = fake_env.step(fake_env.action_space.sample())
         assert fake_monitor in fake_env.monitor_space
         assert "compass" in fake_monitor
         assert "distance" in fake_monitor["compass"]
@@ -62,5 +61,7 @@ def test_fake_navigate_with_distance_monitor():
 
 if __name__ == "__main__":
     # _test_fake_env(Navigate(dense=True, extreme=False), should_render=True)
-    _test_fake_env(Navigate(dense=True, extreme=False, agent_count=3), should_render=True)
+    _test_fake_env(
+        Navigate(dense=True, extreme=False, agent_count=3), should_render=True
+    )
     # test_fake_navigate_with_distance_monitor()

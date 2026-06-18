@@ -5,7 +5,7 @@ from minerl.herobraine.hero import spaces
 import os
 from minerl.herobraine.hero.test_spaces import assert_equal_recursive
 import numpy as np
-import gym
+import gymnasium as gym
 import xmltodict
 
 missions_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test')

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=80", "wheel>=0.45"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minerl"
+version = "1.0.2"
+description = "MineRL environment and data loader for reinforcement learning from human demonstration in Minecraft"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "MineRL Labs", email = "minerl@andrew.cmu.edu" }]
+dependencies = [
+    "coloredlogs>=10.0",
+    "daemoniker>=0.2.3",
+    "dill>=0.3.1.1",
+    "flaky",
+    "getch>=1.0; sys_platform != 'win32' and sys_platform != 'cygwin'",
+    "gymnasium>=1.0.0",
+    "imagehash>=4.0.0",
+    "inflection>=0.3.1",
+    "ipython>=8.18.0",
+    "jinja2>=3.1.2",
+    "lxml>=5.0.0",
+    "numpy>=1.26.0",
+    "opencv-python>=4.9.0.80",
+    "pillow>=10.0.0",
+    "psutil>=5.9.0",
+    "pyglet>=2.0.0",
+    "Pyro4>=4.82",
+    "requests>=2.31.0",
+    "tqdm>=4.66.0",
+    "xmltodict>=0.12.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/minerllabs/minerl"
+
+[dependency-groups]
+dev = [
+    "build>=1.2.2",
+    "pytest>=8.0.0",
+    "pytest-env>=1.1.0",
+    "ruff>=0.12.0",
+    "setuptools>=80",
+    "wheel>=0.45",
+]
+
+[tool.uv]
+package = true
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["minerl*"]
+exclude = ["tests", "tests.*"]

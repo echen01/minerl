@@ -5,7 +5,7 @@ import time
 import logging
 import threading
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import minerl
 import numpy as np
