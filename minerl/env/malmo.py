@@ -95,7 +95,10 @@ class InstanceManager:
     """
     MINECRAFT_DIR = os.path.join(os.path.dirname(__file__), '..', 'MCP-Reborn')
     SCHEMAS_DIR = os.path.join(os.path.dirname(__file__), '..', 'Malmo', 'Schemas')
-    STATUS_DIR = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), 'performance')
+    STATUS_DIR = os.environ.get(
+        'MINERL_STATUS_DIR',
+        os.path.join('/tmp', 'minerl', 'performance')
+    )
     MAXINSTANCES = None
     KEEP_ALIVE_PYRO_FREQUENCY = 5
     REMOTE = False

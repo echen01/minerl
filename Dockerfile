@@ -8,7 +8,10 @@ FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim
 ENV DEBIAN_FRONTEND=noninteractive \
     JAVA_HOME=/opt/java/openjdk \
     LIBGL_ALWAYS_SOFTWARE=1 \
+    MALMO_MINECRAFT_OUTPUT_LOGDIR=/tmp/minerl \
+    MINERL_STATUS_DIR=/tmp/minerl/performance \
     MINERL_TMP_INSTANCES=1 \
+    MINERL_WATCHERS_DIR=/tmp/minerl/watchers \
     PATH="/app/.venv/bin:/opt/java/openjdk/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \

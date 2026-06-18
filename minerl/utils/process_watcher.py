@@ -15,7 +15,10 @@ import signal
 from daemoniker import daemonize
 
 logger = logging.getLogger('process_watcher')
-MINERL_WATCHERS_DIR = os.path.join('logs', 'minerl_watchers')
+MINERL_WATCHERS_DIR = os.environ.get(
+    'MINERL_WATCHERS_DIR',
+    os.path.join('/tmp', 'minerl_watchers')
+)
 
 CHILD_DIR_ARG = 'child-dirs'
 
@@ -166,16 +169,15 @@ if __name__ == '__main__':
     args = parse_args()
     os.makedirs(MINERL_WATCHERS_DIR, exist_ok=True)
 
-    os_cur_dir = os.path.abspath(os.getcwd())
     watcher_name = 'watcher_{}-{}'.format(
         args.parent_pid,
         args.child_pid
     )
 
-    daemonize(os.path.join(os_cur_dir, MINERL_WATCHERS_DIR, watcher_name + '.pid'))
+    daemonize(os.path.join(MINERL_WATCHERS_DIR, watcher_name + '.pid'))
 
     coloredlogs.install(level=logging.DEBUG, stream=open(
-        os.path.join(os_cur_dir, MINERL_WATCHERS_DIR, watcher_name + '.log'), 'w'
+        os.path.join(MINERL_WATCHERS_DIR, watcher_name + '.log'), 'w'
     ))
 
     main(args)
