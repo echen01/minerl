@@ -2,7 +2,6 @@
 # Author: William H. Guss, Brandon Houghton
 
 import os
-import sys
 import json
 
 import subprocess
@@ -43,11 +42,20 @@ except ImportError:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 try:
+    from setuptools.command.editable_wheel import editable_wheel as _editable_wheel
+except ImportError:
+    _editable_wheel = None
+
+try:
     # @minecraft_build
     class bdist_wheel(_bdist_wheel):
         def finalize_options(self):
             _bdist_wheel.finalize_options(self)
             self.root_is_pure = False
+
+        def run(self):
+            ensure_mcp_built()
+            _bdist_wheel.run(self)
 
 except ImportError:
     bdist_wheel = None
@@ -65,6 +73,31 @@ class BinaryDistribution(Distribution):
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+
+_MCP_BUILD_DONE = False
+
+
+def _env_flag_enabled(name):
+    return os.environ.get(name, "").lower() not in {"", "0", "false", "no"}
+
+
+def should_build_mcp():
+    if _env_flag_enabled("MINERL_SKIP_MCP_BUILD"):
+        return False
+    if os.environ.get("MINERL_BUILD_MCP") is not None:
+        return _env_flag_enabled("MINERL_BUILD_MCP")
+    return not _env_flag_enabled("READTHEDOCS")
+
+
+def ensure_mcp_built():
+    global _MCP_BUILD_DONE
+
+    if _MCP_BUILD_DONE or not should_build_mcp():
+        return
+
+    prep_mcp()
+    _MCP_BUILD_DONE = True
 
 
 def unpack_assets():
@@ -119,12 +152,34 @@ class InstallWithMinecraftLib(install_lib):
     """
 
     def build(self):
-        if os.environ.get("MINERL_BUILD_MCP") == "1":
-            prep_mcp()
+        ensure_mcp_built()
         super().build()
 
 
-class CustomBuild(build):
+class BuildWithMinecraft(build):
+    def run(self):
+        ensure_mcp_built()
+        super().run()
+
+
+class DevelopWithMinecraft(develop):
+    def run(self):
+        ensure_mcp_built()
+        super().run()
+
+
+if _editable_wheel is not None:
+
+    class editable_wheel(_editable_wheel):
+        def run(self):
+            ensure_mcp_built()
+            super().run()
+
+else:
+    editable_wheel = None
+
+
+class BuildMalmo(build):
     def run(self):
         prep_mcp()
         super().run()
@@ -176,7 +231,7 @@ def prep_mcp():
                     """
                 )
             subprocess.check_call(["bash.exe", "patch_mcp.sh"])
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             raise RuntimeError(
                 """
                 Running install scripts failed. Check error logs above for more information.
@@ -228,15 +283,19 @@ def prep_mcp():
         os.chdir(old_dir)
 
 
-# The Minecraft/MCP build requires Java and Gradle assets, so keep it out of
-# PEP 517 metadata/wheel builds unless it is explicitly requested.
+# Build MCP during installable wheel/editable builds. PEP 517 metadata hooks do
+# not run these commands, so metadata generation stays side-effect free.
 cmdclass = {
     "bdist_wheel": bdist_wheel,
+    "build": BuildWithMinecraft,
+    "develop": DevelopWithMinecraft,
     "install": InstallPlatlib,
     "install_lib": InstallWithMinecraftLib,
-    "build_malmo": CustomBuild,
+    "build_malmo": BuildMalmo,
     "shadow_develop": ShadowInplace,
 }
+if editable_wheel is not None:
+    cmdclass["editable_wheel"] = editable_wheel
 
 setuptools.setup(
     distclass=BinaryDistribution,

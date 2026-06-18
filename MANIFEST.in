@@ -1,6 +1,10 @@
 include README.md
 include requirements.txt
 include LICENSE
+include scripts/setup_mcp.sh
+include scripts/patch_mcp.sh
+include scripts/mcp_patch.diff
+recursive-include scripts/cursors *.png
 recursive-include minerl/herobraine/env_specs *
 include minerl/herobraine/hero/mc_constants.json
 include minerl/herobraine/hero/mc_constants.1.16.json
